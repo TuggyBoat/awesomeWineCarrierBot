@@ -1,31 +1,39 @@
 import pprint
 import pandas as pd
-from main import get_responses
+from main import get_responses, push_to_sheet
 
 
-def find_response(query):
+
+def find_response(query=None):
     responses = get_responses()['responses']
 
-    for r in responses:
-        if query in str(r):
-            print(r)
+    if query is None:
+        return format_responses(responses)
+    else:
+
+        if query in str(responses):
+            return format_responses(responses)
+        else:
+            return 'Query not found'
 
 
-def all_responses():
-    responses = get_responses()['responses']
-
+def format_responses(responses):
     response_list = []
-
-    for itx, r in enumerate(responses):
-        df = pd.DataFrame.from_dict(r['answers'], orient='index')
+    for response in responses:
+        pprint.pprint(response)
+        df = pd.DataFrame.from_dict(response['answers'], orient='index')
         text_answers = df.loc[:, 'textAnswers']
-        internal_response_list = [itx]
+        internal_response_list = []
         for answer in text_answers:
             answer_value = answer['answers'][0]['value']
             internal_response_list.append(answer_value)
 
         response_list.append(internal_response_list)
 
-    return response_list
+        print(response_list)
 
-print(all_responses())
+    response_dataframe = pd.DataFrame(response_list)
+
+    return response_dataframe
+
+push_to_sheet(find_response())
